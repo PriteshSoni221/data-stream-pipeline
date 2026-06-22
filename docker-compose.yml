@@ -32,6 +32,10 @@ services:
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
       # Unique cluster identifier (generated, must match across all nodes in a cluster)
       - CLUSTER_ID=MkU3OEVBNTcwNTJENDM2Qk
+      - KAFKA_LOG_DIRS=/var/lib/kafka/data
+    # Persist Kafka data to a local directory on the host machine
+    volumes:
+      - ./kafka-data:/var/lib/kafka/data
     # Health check to verify Kafka is ready: attempts to list topics
     healthcheck:
       test: ["CMD", "bash", "-lc", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
