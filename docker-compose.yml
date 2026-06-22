@@ -1,0 +1,86 @@
+# Docker Compose configuration for Kafka, Flink JobManager, and TaskManager
+services:
+  # Kafka: Message broker for streaming data
+  kafka:
+    image: apache/kafka:3.7.1
+    container_name: thesis-kafka
+    # Port 9092 is exposed for external connections to Kafka broker
+    ports:
+      - "9092:9092"
+    environment:
+      # Unique identifier for this Kafka broker node
+      - KAFKA_NODE_ID=1
+      # This node acts as both a broker (handles messages) and controller (manages cluster coordination)
+      - KAFKA_PROCESS_ROLES=broker,controller
+      # Ports where Kafka listens: 9092 for client connections (producers, consumers), 9093 for internal controller communication (between brokers)
+      - KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      # How clients connect to this Kafka broker (hostname and port)
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      # Security protocol mapping: tells Kafka which protocol to use for each listener type
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      # Specifies which listener names are used for controller communication
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      # Lists all brokers in the controller quorum (1@kafka:9093 means node 1 at kafka:9093)
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      # Number of copies of offset data (topic metadata) to keep. 1 = no backup/replication
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      # Number of copies of transaction state log. 1 = no backup/replication
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      # Minimum in-sync replicas for transaction log (1 = only needs this broker to acknowledge)
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+      # Automatically create topics when producers/consumers attempt to use them
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      # Unique cluster identifier (generated, must match across all nodes in a cluster)
+      - CLUSTER_ID=MkU3OEVBNTcwNTJENDM2Qk
+    # Health check to verify Kafka is ready: attempts to list topics
+    healthcheck:
+      test: ["CMD", "bash", "-lc", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Flink JobManager: The master node that coordinates job execution and distributes work to TaskManagers
+  jobmanager:
+    # Build image from the specified Dockerfile
+    build:
+      context: .
+      dockerfile: docker/flink-py/Dockerfile
+    image: thesis-flink-py:1.19.2
+    container_name: thesis-flink-jobmanager
+    # Port 8081 exposes Flink's web UI for monitoring and job management
+    ports:
+      - "8081:8081"
+    # Run this container as the JobManager
+    command: jobmanager
+    environment:
+      # Address where TaskManagers can reach this JobManager
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+    # Mount the jobs directory so JobManager can access Python streaming jobs
+    volumes:
+      - ./jobs:/opt/flink/jobs
+    # Wait for Kafka to be healthy before starting JobManager
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  # Flink TaskManager: Worker node that executes the actual streaming job tasks assigned by JobManager
+  taskmanager:
+    # Build image from the specified Dockerfile
+    build:
+      context: .
+      dockerfile: docker/flink-py/Dockerfile
+    image: thesis-flink-py:1.19.2
+    container_name: thesis-flink-taskmanager
+    # Run this container as a TaskManager
+    command: taskmanager
+    environment:
+      # Address where this TaskManager can connect to the JobManager
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+      # Number of parallel task slots this TaskManager can execute simultaneously (for parallelism)
+      - TASK_MANAGER_NUMBER_OF_TASK_SLOTS=2
+    # Mount the jobs directory so TaskManager can access Python streaming jobs
+    volumes:
+      - ./jobs:/opt/flink/jobs
+    # Wait for JobManager to start before this TaskManager starts
+    depends_on:
+      - jobmanager
