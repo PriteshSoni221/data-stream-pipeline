@@ -1,0 +1,5 @@
+# Python dependencies for the Kafka log producer.
+#
+# confluent-kafka is a fast, production-grade Kafka client backed by librdkafka,
+# with prebuilt wheels for macOS arm64 + Python 3.9 (no compilation needed).
+confluent-kafka==2.5.0

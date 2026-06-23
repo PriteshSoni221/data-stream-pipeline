@@ -4,20 +4,27 @@ services:
   kafka:
     image: apache/kafka:3.7.1
     container_name: thesis-kafka
-    # Port 9092 is exposed for external connections to Kafka broker
+    # Map host port 9092 to the broker's EXTERNAL listener (19092 inside the container)
     ports:
-      - "9092:9092"
+      - "9092:19092"
     environment:
       # Unique identifier for this Kafka broker node
       - KAFKA_NODE_ID=1
       # This node acts as both a broker (handles messages) and controller (manages cluster coordination)
       - KAFKA_PROCESS_ROLES=broker,controller
-      # Ports where Kafka listens: 9092 for client connections (producers, consumers), 9093 for internal controller communication (between brokers)
-      - KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      # How clients connect to this Kafka broker (hostname and port)
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      # Two client listeners so both containers and the host can connect:
+      #   INTERNAL (kafka:9092)   -> used by other containers (Flink, etc.)
+      #   EXTERNAL (localhost:9092) -> used by host tools (Python producer)
+      # CONTROLLER (9093) is for internal controller communication between brokers.
+      - KAFKA_LISTENERS=INTERNAL://:9092,EXTERNAL://:19092,CONTROLLER://:9093
+      # The address each listener advertises back to clients on connect.
+      # Containers resolve 'kafka:9092'; the host reaches the broker via the
+      # published port localhost:9092 (mapped to the container's :19092).
+      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka:9092,EXTERNAL://localhost:9092
       # Security protocol mapping: tells Kafka which protocol to use for each listener type
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      # The listener other brokers/clients in the cluster use for inter-broker traffic
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
       # Specifies which listener names are used for controller communication
       - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
       # Lists all brokers in the controller quorum (1@kafka:9093 means node 1 at kafka:9093)
