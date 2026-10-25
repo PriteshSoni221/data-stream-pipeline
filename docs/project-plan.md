@@ -4,7 +4,8 @@
 
 This is a living document. The topic, research questions and scope are still
 provisional and will be steered by the literature review. Sections marked
-**(open)** are decisions not yet made.
+**(open)** are decisions not yet made. Decisions already taken, and the
+reasons for them, are in [decisions.md](decisions.md).
 
 ## Working Title (provisional)
 **Evaluating Optimized and LLM-Only Approaches for Real-Time Text Stream Processing**
@@ -40,8 +41,6 @@ These are starting points that the literature review will sharpen.
   does now, with uniform classes) or *anomaly detection* (rare anomalies in
   mostly normal traffic)? The answer decides the class balance, the metrics
   and which literature applies.
-- **Naming:** pick one pair of names and use it in code, SQL, README and the
-  thesis. Proposal: *LLM-only* vs *cascade*.
 - **Models:** which LLM provider and model, which SLM (local vs hosted), and
   which SML method (e.g. TF-IDF + logistic regression, or an embedding cache).
 - **Data:** synthetic logs only, or also a public labelled log dataset as an
