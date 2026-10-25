@@ -34,7 +34,7 @@ The custom Flink image adds PyFlink and the Kafka connector
 ## Repository layout
 
 ```
-app/
+code/
 ├── docker-compose.yml          # Kafka + Flink JobManager + TaskManager
 ├── docker/flink-py/Dockerfile  # Custom PyFlink image (Kafka connector included)
 ├── producers/                  # Kafka log producer

@@ -1,6 +1,32 @@
+# macOS
+.DS_Store
+
+# Resources are managed by Zotero, never committed (copyrighted PDFs)
+/resources/
+
+# Python
 __pycache__/
 *.pyc
-.DS_Store
-kafka-data/
-.venv
-results/
+.venv/
+
+# Code: runtime data and experiment output
+/code/kafka-data/
+/code/results/
+
+# LaTeX build artefacts
+/thesis/build/
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.xdv
+/thesis/*.pdf
