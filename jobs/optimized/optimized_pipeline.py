@@ -32,9 +32,17 @@ from pyflink.datastream import StreamExecutionEnvironment
 from common import config
 from common.kafka_source import build_kafka_source
 from common.serde import parse_log
-from operators.llm_operator import classify_with_llm
 from operators.slm_operator import classify_with_slm
 from operators.sml_router import route
+
+# Not yet ported to the instrumented operator interface used by the LLM-only
+# arm. Blocked on the real SML router; porting it against the always-escalate
+# stub would just duplicate the LLM-only arm.
+_NOT_PORTED = (
+    "The cascade arm is not implemented yet. Only the LLM-only arm "
+    "(jobs/naive/naive_pipeline.py) is runnable. This arm needs the real SML "
+    "router before it measures anything the LLM-only arm does not."
+)
 
 
 def enrich(log: dict) -> dict:
@@ -46,8 +54,8 @@ def enrich(log: dict) -> dict:
         result = result or {}
     elif decision == "SLM_CLASSIFIED":
         result = classify_with_slm(log)
-    else:  # LLM_FALLBACK (or anything unexpected) escalates to the LLM.
-        result = classify_with_llm(log)
+    else:
+        raise NotImplementedError(_NOT_PORTED)
 
     return {**log, **result, "pipeline_type": "OPTIMIZED"}
 
@@ -89,4 +97,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(_NOT_PORTED)

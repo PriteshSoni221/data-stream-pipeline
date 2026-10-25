@@ -1,20 +1,26 @@
 """
-NAIVE pipeline: Kafka -> LLM -> sink.
+LLM-only arm: Kafka -> LLM -> instrumented JSONL sink.
 
-The baseline / brute-force approach: EVERY log goes straight to the LLM, no
-routing or cheaper tiers. This is the expensive-but-simple reference point the
-optimized pipeline is compared against.
+The baseline. Every log goes straight to the LLM, no routing or cheaper tiers.
+This is the expensive-but-simple reference point every other arm is compared
+against, and the arm whose throughput ceiling constrains the whole design.
 
 Run inside the Flink container:
 
-    flink run \
+    flink run -d \
       -py /opt/flink/jobs/naive/naive_pipeline.py \
-      -pyfs /opt/flink/jobs
+      -pyfs /opt/flink/jobs \
+      --run-id p0-par8 --parallelism 8 --latency-median-ms 500
 
-(`-pyfs /opt/flink/jobs` puts the `common` and `operators` packages on the
-PYTHONPATH of both the client and the Python workers.)
+Parallelism is a first-class experiment parameter, not a constant: PyFlink has
+no Async I/O, so it is the only way to overlap blocking inference calls.
+
+The consumer group is derived from --run-id so every run is a fresh group and
+therefore replays the topic from the earliest offset. Reusing a group id would
+silently make the second run of an experiment consume nothing.
 """
 
+import argparse
 import os
 import sys
 
@@ -29,34 +35,54 @@ from pyflink.common.watermark_strategy import WatermarkStrategy
 from pyflink.datastream import StreamExecutionEnvironment
 
 from common import config
+from common.instrumentation import now
 from common.kafka_source import build_kafka_source
 from common.serde import parse_log
-from operators.llm_operator import classify_with_llm
+from common.sink import JsonlSink, RecordBuilder
+from operators.llm_operator import LlmClassifier
+
+ARM = "llm_only"
 
 
-def enrich(log: dict) -> dict:
-    """Attach the LLM classification result to the log event."""
-    result = classify_with_llm(log)
-    return {**log, **result, "pipeline_type": "NAIVE"}
+def parse_and_stamp(record: str):
+    """Deserialize a Kafka record and mark when the pipeline first saw it."""
+    log = parse_log(record)
+    if log is None:
+        return None
+    log["t_ingest"] = now()
+    return log
 
 
-def format_result(log: dict) -> str:
-    """Render one processed event as a readable line for the console sink."""
+def summarize(record: dict) -> str:
     return (
-        f"[NAIVE] true={log.get('true_category')} "
-        f"pred={log.get('predicted_category')} "
-        f"route={log.get('routing_decision')} "
-        f"msg={log.get('message', '')[:80]}"
+        f"[{record['arm']} p={record['parallelism']}] "
+        f"true={record.get('true_category')} "
+        f"pred={record.get('predicted_category')} "
+        f"service_ms={record.get('service_ms')}"
     )
 
 
+def parse_args(argv):
+    parser = argparse.ArgumentParser(description="LLM-only pipeline arm")
+    parser.add_argument("--run-id", required=True)
+    parser.add_argument("--parallelism", type=int, default=1)
+    parser.add_argument("--llm-backend", default="mock", choices=["mock", "api"])
+    parser.add_argument("--latency-median-ms", type=float, default=500.0)
+    parser.add_argument("--latency-sigma", type=float, default=0.35)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--results-dir", default="/opt/flink/results")
+    return parser.parse_args(argv)
+
+
 def main() -> None:
+    args = parse_args(sys.argv[1:])
+
     env = StreamExecutionEnvironment.get_execution_environment()
-    env.set_parallelism(1)
+    env.set_parallelism(args.parallelism)
 
     source = build_kafka_source(
         topic=config.KAFKA_TOPIC,
-        group_id=config.NAIVE_GROUP_ID,
+        group_id=f"{ARM}-{args.run_id}",
         bootstrap_servers=config.KAFKA_BOOTSTRAP_SERVERS,
     )
 
@@ -66,17 +92,30 @@ def main() -> None:
 
     (
         stream
-        # raw JSON string -> dict (drop anything that fails to parse)
-        .map(parse_log, output_type=Types.PICKLED_BYTE_ARRAY())
+        .map(parse_and_stamp, output_type=Types.PICKLED_BYTE_ARRAY())
         .filter(lambda log: log is not None)
-        # dict -> dict enriched with the LLM result
-        .map(enrich, output_type=Types.PICKLED_BYTE_ARRAY())
-        # dict -> printable string (temporary console sink; Redis/Postgres later)
-        .map(format_result, output_type=Types.STRING())
+        .map(
+            LlmClassifier(
+                backend=args.llm_backend,
+                latency_median_ms=args.latency_median_ms,
+                latency_sigma=args.latency_sigma,
+                seed=args.seed,
+            ),
+            output_type=Types.PICKLED_BYTE_ARRAY(),
+        )
+        .map(
+            RecordBuilder(args.run_id, ARM, args.parallelism),
+            output_type=Types.PICKLED_BYTE_ARRAY(),
+        )
+        .map(
+            JsonlSink(args.run_id, args.results_dir),
+            output_type=Types.PICKLED_BYTE_ARRAY(),
+        )
+        .map(summarize, output_type=Types.STRING())
         .print()
     )
 
-    env.execute("naive-llm-pipeline")
+    env.execute(f"{ARM}-{args.run_id}")
 
 
 if __name__ == "__main__":
