@@ -18,4 +18,5 @@ as the literature review progresses; see [docs/project-plan.md](docs/project-pla
 - **Thesis:** compile `thesis/main.tex` with LuaLaTeX + Biber.
 - **Literature:** kept in the Zotero `thesis` collection. The bibliography used by
   LaTeX is exported from Zotero (Better BibTeX, "keep updated") into
-  `thesis/references.bib`, which is tracked.
+  `resources/refs.bib`, which is git-ignored. Candidate papers not yet in
+  Zotero are in [docs/reading-list.md](docs/reading-list.md).
