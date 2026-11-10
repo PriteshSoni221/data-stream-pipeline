@@ -1,4 +1,4 @@
-%% This is file `DEMO-TUDaThesis.tex' version 4.05 (2025-11-13),
+%% Based on `DEMO-TUDaThesis.tex' version 4.05 (2025-11-13),
 %% it is part of
 %% TUDa-CI -- Corporate Design for TU Darmstadt
 %% ----------------------------------------------------------------------------
@@ -69,7 +69,7 @@
 % Bibliography
 %%%%%%%%%%%%%%%%%%%
 \usepackage{biblatex}
-\addbibresource{DEMO-TUDaBibliography.bib}% File name of BibTeX database
+\addbibresource{../resources/refs.bib}% Zotero (Better BibTeX) export; resources/ is git-ignored
 
 %%%%%%%%%%%%%%%%%%%
 % Package suggestions for tables
@@ -88,17 +88,17 @@
 %\usepackage{siunitx}% Numbers and Units
 
 \hypersetup{% Metadata adjustments, in case these are not set, the data provided for \maketitle will be used
-	pdfauthor=Marei Peischl (peiTeX),
-	pdfcreationdate=2024-05-03,
-	pdfkeywords={TU Darmstadt; Corporate Design; LaTeX}
+	pdfauthor=Pritesh Soni,
+	pdfkeywords={stream processing; large language models; small language models; model cascades; log analysis}
 }
 
-\title{TUDaThesis -- Theses using TU Darmstadt's CI}
-\subtitle{\LaTeX{} im Corporate Design der TU Darmstadt}
-\author{Marei Peischl}
-\reviewer{Reviewer 1 \and Reviewer 2 \and …}
+% Working title (provisional, see docs/project-plan.md)
+\title{Evaluating Optimized and LLM-Only Approaches for Real-Time Text Stream Processing}
+\author{Pritesh Soni}
+\reviewer{Reviewer 1 \and Reviewer 2}% TODO: fill in reviewers
 
 % The following elements will be placed on the title page
+% TODO: set department shorthand, institute and group
 \department{ce}% If defined the shorthand will be replaced by the full name otherwhise it's used directly.
 \institute{Institute}
 \group{Group}
@@ -124,14 +124,20 @@
 % Additional lists like \listoffigures or acronyms might be added here
 
 
-\addchap{About this file}
+% Abstract: write last.
+%\begin{abstract}
+%\end{abstract}
 
-\enquote{DEMO-TUDaThesis.tex} is a basic template for theses using the Corporate Design of TU Darmstadt.
-It is part of TUDa-CI, which is the official template bundle of TU Darmstadt. The original version was inspired by the \enquote{tuddesign} bundle by C.~v.~Loewenich and J.~Werner.
-For more information on class options and usage have a look at the documentation \cite{tuda-ci}.
+\input{chapters/01-introduction}
+\input{chapters/02-background}
+\input{chapters/03-related-work}
+\input{chapters/04-design}
+\input{chapters/05-implementation}
+\input{chapters/06-evaluation}
+\input{chapters/07-discussion}
+\input{chapters/08-conclusion}
 
 
 \printbibliography
 
 \end{document}
-%% End of file `DEMO-TUDaThesis.tex'.

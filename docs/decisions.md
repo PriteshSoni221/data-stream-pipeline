@@ -3,6 +3,14 @@
 Dated record of decisions and the reasons behind them. Newest first. These
 feed the methodology chapter and answer examiners' "why did you…?" questions.
 
+## 2026-11-10 — Bibliography lives at `resources/refs.bib`
+The thesis reads the Zotero (Better BibTeX) export directly from
+`resources/refs.bib`; there is no `thesis/references.bib`. The template's demo
+bibliography was removed.
+**Why:** that is where Zotero already exports, and one file avoids a stale
+copy. Consequence: `resources/` is git-ignored, so the bibliography is not in
+git and the thesis only builds on a machine with the Zotero export.
+
 ## 2026-10-25 — Target submission end of January 2027
 Fixed 6-month phases dropped in favour of an optimistic 14-week plan to
 29 Jan 2027, with milestones M1–M4 (see `project-plan.md`).
@@ -19,7 +27,7 @@ no room for them. Results are analysed directly from the JSONL output.
 The `app/` repo was lifted to the thesis root. LaTeX moved out of the code
 tree. Papers are managed by Zotero in a git-ignored `resources/`.
 **Why:** one repo for the whole thesis; copyrighted PDFs stay out of git;
-`thesis/references.bib` (exported from Zotero) links literature to the text.
+the Zotero bibliography export links literature to the text (see 2026-11-10 for its location).
 
 ## 2026-10-25 — Arm names: `llm_only` and `cascade`
 These names replace the mix of naive/optimized/NAIVE/tiered. Migration

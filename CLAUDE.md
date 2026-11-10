@@ -13,7 +13,8 @@ and are steered by the literature review. Don't treat them as fixed.
 - `docs/decisions.md` is the dated log of decisions and their reasons. Add
   an entry whenever scope, method, models or naming change.
 - `code/` holds the streaming stack. See `code/README.md`.
-- `thesis/` holds the LaTeX source (TUDa template, LuaLaTeX + Biber). LaTeX is
+- `thesis/` holds the LaTeX source (TUDa template, LuaLaTeX + Biber):
+  `main.tex` plus one file per chapter in `thesis/chapters/`. LaTeX is
   not installed locally.
 - `resources/` holds papers, managed by Zotero. It is git-ignored and must
   never be committed.
@@ -43,7 +44,10 @@ and are steered by the literature review. Don't treat them as fixed.
 ## Literature and citations
 - Never invent or guess a citation, author, venue or result. A paper is
   citable only once it's in Zotero (collection `thesis`) and therefore in
-  `thesis/references.bib`, exported by Better BibTeX.
+  `resources/refs.bib`, exported by Better BibTeX. `thesis/main.tex` reads
+  that file directly.
+- `docs/reading-list.md` holds verified candidates that are not yet in
+  Zotero. They are leads, not sources.
 - Paper names suggested without checking (for example, in the plan's gap
   list) are leads to look up, not sources. Label them that way.
 - Ground claims about the thesis topic in papers the user has, and say when

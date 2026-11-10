@@ -1,0 +1,17 @@
+\chapter{Design}\label{ch:design}
+% Target: 8-10 pages. What and why; reasons come from docs/decisions.md.
+
+\section{Use Case and Task Definition}
+% OPEN: incident classification (8 categories) vs anomaly detection.
+\section{Data}
+% Synthetic generator (ground truth, complexity tiers, seeds).
+% OPEN: public labelled log dataset as external validity check.
+\section{LLM-Only Arm}
+\section{Cascade Arm}
+% SML router -> SLM -> LLM; routing decisions; escalation rule.
+% OPEN: models and SML method.
+\section{Measurement Design}
+% Per-event record (code/jobs/common/instrumentation.py):
+% service_ms, queue_ms, e2e_ms reported separately; cost; quality.
+\section{Developer-Experience Comparison}
+% Effort log, components, setup steps, lines of code. Needs a method source.

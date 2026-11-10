@@ -1,6 +1,6 @@
 # Master's Thesis Project Plan
 
-*Last updated: 25 Oct 2026 · Target submission: end of January 2027*
+*Last updated: 10 Nov 2026 · Target submission: end of January 2027*
 
 This is a living document. The topic, research questions and scope are still
 provisional and will be steered by the literature review. Sections marked
@@ -46,7 +46,11 @@ These are starting points that the literature review will sharpen.
 - **Data:** synthetic logs only, or also a public labelled log dataset as an
   external validity check?
 
-## Current Status (25 Oct 2026)
+## Current Status (10 Nov 2026)
+
+**M1 (8 Nov) was missed.** Research questions, task framing, models and
+dataset are still open, and the P0 sweep still lacks parallelism 4/8/16. Since
+25 Oct: the thesis skeleton and a verified reading list were added (below).
 
 ### Built
 - Dockerised stack: Kafka 3.7 (KRaft) and Flink 1.19 / PyFlink, with 16 task
@@ -71,6 +75,11 @@ These are starting points that the literature review will sharpen.
   Scaling is linear so far. Parallelism 4, 8 and 16 have not been run yet.
 - Repository restructured into `code/`, `thesis/`, `docs/` and `resources/`
   (the last managed by Zotero). The LaTeX template is in place.
+- Thesis skeleton (10 Nov): `thesis/main.tex` with eight chapter files in
+  `thesis/chapters/`, each an outline with TODOs and no prose yet. It reads
+  the bibliography from `resources/refs.bib`. Not compiled (no local LaTeX).
+- Literature sprint (10 Nov): [reading-list.md](reading-list.md) holds 34
+  verified candidate papers for gaps 1–6. None is in Zotero yet.
 
 ### Not built yet
 - SML router and SLM operator (currently placeholders).
@@ -78,7 +87,7 @@ These are starting points that the literature review will sharpen.
 - Cascade arm on the instrumented interface (it currently refuses to run).
 - Postgres loader. The schema in `create-table.sql` predates the measurement
   schema and needs aligning.
-- Redis, the dashboard, and any thesis text.
+- Redis, the dashboard, and any thesis prose.
 
 ## Scope for a January Submission
 To finish by the end of January, the core is the two arms, the measurements
@@ -97,7 +106,7 @@ and the written thesis. Everything else is optional.
 
 | Weeks | Dates | Focus | Milestone |
 |---|---|---|---|
-| 1–2 | 26 Oct – 8 Nov | Literature sprint on the gaps below; Zotero + Better BibTeX → `thesis/references.bib`; finish the P0 sweep (parallelism 4/8/16); decide task framing and models | **M1:** research questions fixed, related-work outline |
+| 1–2 | 26 Oct – 8 Nov | Literature sprint on the gaps below; Zotero + Better BibTeX → `resources/refs.bib`; finish the P0 sweep (parallelism 4/8/16); decide task framing and models | **M1:** research questions fixed, related-work outline |
 | 3–5 | 9 – 29 Nov | Build SML router, SLM operator, real LLM backend with cost accounting; port the cascade arm to the instrumented interface. Write the Background and Related Work chapters alongside | **M2:** both arms run end to end on real models |
 | 6–8 | 30 Nov – 20 Dec | Run experiments (quality by complexity tier, cost, latency under load, scaling) and keep the developer-experience log. Write the Design and Implementation chapters | **M3:** results frozen |
 | 9–10 | 21 Dec – 3 Jan | Holiday buffer; light writing (first Evaluation draft) | — |
@@ -134,8 +143,10 @@ the end.
    research measures it, so the developer-experience comparison has a method
    rather than an anecdote.
 
+Verified candidates for these gaps are in [reading-list.md](reading-list.md).
 Every paper goes into Zotero (collection `thesis`) with a short note on what
-claim it supports.
+claim it supports. Only 6 of the 8 current papers are in `resources/refs.bib`;
+*Cut Costs, Not Accuracy* and *AOP* are missing.
 
 ## Risks
 - **Real-model throughput:** an SLM running on a laptop, or LLM rate limits,
